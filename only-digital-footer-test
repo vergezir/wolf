@@ -1,0 +1,48 @@
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+import unittest
+import time
+
+class OnlyDigitalFooterTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # Инициализация драйвера
+        cls.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+        cls.driver.maximize_window()
+        cls.driver.get("https://only.digital/")
+        time.sleep(3)  # Ожидание загрузки страницы
+
+    def test_footer_presence(self):
+        """Проверка наличия футера на странице"""
+        footer = self.driver.find_element(By.TAG_NAME, 'footer')
+        self.assertTrue(footer.is_displayed(), "Футер не отображается на странице")
+
+    def test_footer_elements(self):
+        """Проверка ключевых элементов футера"""
+        footer = self.driver.find_element(By.TAG_NAME, 'footer')
+        
+        # Элементы для проверки (локаторы могут потребовать корректировки)
+        elements = {
+            'Логотип компании': (By.XPATH, ".//div[contains(@class, 'footer-logo')]"),
+            'Меню навигации': (By.XPATH, ".//nav[contains(@class, 'footer-nav')]"),
+            'Контактная информация': (By.XPATH, ".//div[contains(@class, 'footer-contacts')]"),
+            'Социальные сети': (By.XPATH, ".//div[contains(@class, 'social-links')]"),
+            'Копирайт': (By.XPATH, ".//div[contains(@class, 'copyright')]")
+        }
+
+        for element_name, locator in elements.items():
+            try:
+                element = footer.find_element(*locator)
+                self.assertTrue(element.is_displayed(), 
+                              f"Элемент '{element_name}' не отображается в футере")
+            except Exception as e:
+                self.fail(f"Не удалось найти элемент '{element_name}': {str(e)}")
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.driver.quit()
+
+if __name__ == "__main__":
+    unittest.main()
